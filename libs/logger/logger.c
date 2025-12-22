@@ -3,6 +3,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdarg.h>
+#include <time.h>
 
 #include "logger.h"
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -20,47 +21,65 @@ static FILE* logger_fp = NULL;
 
 
 // :::: COLORING ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-char* logger_get_stdout_header(logger_level level) {
+void logger_print_stdout_header(logger_level level) {
+    // Print logging level
     if (level == LOGGER_INFO)
-        return LOGGER_BLUE"[INFO]:"LOGGER_RESET;
+        printf(LOGGER_BLUE"[INFO]:"LOGGER_RESET" ");
     else if (level == LOGGER_WARN)
-        return LOGGER_YELLOW"[WARN]:"LOGGER_RESET;
+        printf(LOGGER_YELLOW"[WARN]:"LOGGER_RESET" ");
     else if (level == LOGGER_ERROR)
-        return LOGGER_RED"[ERRO]:"LOGGER_RESET;
+        printf(LOGGER_RED"[ERRO]:"LOGGER_RESET" ");
     else if (level == LOGGER_SUCC)
-        return LOGGER_GREEN"[SUCC]:"LOGGER_RESET;
-    else
-        return "";
+        printf(LOGGER_GREEN"[SUCC]:"LOGGER_RESET" ");
+    
+    return;
 }
 
-char* logger_get_log_file_header(logger_level level) {
+void logger_print_log_file_header(logger_level level) {
+    if (logger_fp == NULL)
+        return;
+    
+    // Print timestamp
+    time_t now   = time(NULL);
+    struct tm* t = localtime(&now);
+
+    struct timespec ts;
+    clock_gettime(CLOCK_REALTIME, &ts);
+    long milis = ts.tv_nsec / 1000000;
+
+    fprintf(logger_fp, "[%4d-%2d-%2d %2d:%2d:%2d.%3ld] ", t->tm_year + 1900, t->tm_mon, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, milis);
+
+    // Print logging level
     if (level == LOGGER_INFO)
-        return "INFO:";
+        fprintf(logger_fp, "INFO: ");
     else if (level == LOGGER_WARN)
-        return "WARN:";
+        fprintf(logger_fp, "WARN: ");
     else if (level == LOGGER_ERROR)
-        return "ERROR:";
+        fprintf(logger_fp, "ERROR: ");
     else if (level == LOGGER_SUCC)
-        return "SUCC:";
-    else
-        return "";
+        fprintf(logger_fp, "SUCC: ");
+
+    return;
 }
 
 void logger_log(logger_level level, const char* message, ...) {
+    va_list args;
+
     // Print header
-    fprintf(stdout, "%s ", logger_get_stdout_header(level));
+    logger_print_stdout_header(level);
     
     // Write to stdout
-    va_list args;
     va_start(args, message);
     vfprintf(stdout, message, args);
     va_end(args);
 
-    // Write line to log file
     if (logger_fp == NULL) return;
 
+    // Print timestamped header
+    logger_print_log_file_header(level);
+
+    // Write to log file
     va_start(args, message);
-    fprintf(logger_fp, "%s ", logger_get_log_file_header(level));
     vfprintf(logger_fp, message, args);
     va_end(args);
     return;

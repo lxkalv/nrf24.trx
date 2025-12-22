@@ -22,25 +22,25 @@ typedef enum {
 
 // :::: COLORING ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 /**
- * @brief Get a colored header based on the log level.
+ * @brief Print a colored header based on the log level.
  * 
- * @param level The logging level to get the header for
+ * @param level The logging level to print the header for
  */
-char* logger_get_stdout_header(logger_level level);
+void logger_print_stdout_header(logger_level level);
 
 /**
- * @brief Get a header for the message written in the log file.
+ * @brief Print a timestamped header for the message written in the log file.
  * 
- * @param level The logging level to get the header for
+ * @param level The logging level to print the header for
  */
-char* logger_get_log_file_header(logger_level level);
+void logger_print_log_file_header(logger_level level);
 
 /**
  * @brief Print a colored message to stdout and log file.
  * 
  * Print a message to stdout with a colored header based on the log level. If the
  * logger is initialized with a log file. It will also log the line to the file
- * with a timestamp.
+ * with a timestamp and without the ANSII escape sequences.
  * 
  * @param level The logging level to be used
  * @param message The string to be logged
@@ -60,7 +60,7 @@ void logger_log(logger_level level, const char* message, ...);
  * called multiple times.
  * 
  * @param file_path Path to the log file.
-*/
+ */
 int logger_init(const char *file_path);
 
 /**
