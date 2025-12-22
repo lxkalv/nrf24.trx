@@ -10,8 +10,16 @@
 
 
 
+// :::: DEFINITIONS :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+static FILE* logger_fp = NULL;
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+
+
 // :::: COLORING ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-char* logger_get_colored_header(logger_level level) {
+char* logger_get_stdout_header(logger_level level) {
     if (level == LOGGER_INFO)
         return LOGGER_BLUE"[INFO]:"LOGGER_RESET;
     else if (level == LOGGER_WARN)
@@ -24,14 +32,33 @@ char* logger_get_colored_header(logger_level level) {
         return "";
 }
 
+char* logger_get_log_file_header(logger_level level) {
+    if (level == LOGGER_INFO)
+        return "INFO:";
+    else if (level == LOGGER_WARN)
+        return "WARN:";
+    else if (level == LOGGER_ERROR)
+        return "ERROR:";
+    else if (level == LOGGER_SUCC)
+        return "SUCC:";
+    else
+        return "";
+}
+
 // void logger_log(logger_level level, char* message, const char* fmt, ...) {
 void logger_log(logger_level level, char* message) {
     // va_list args;
     // va_start(args, fmt);
-    char* header = logger_get_colored_header(level);
+    char* header = logger_get_stdout_header(level);
     // char buffer[128];
     printf("%s %s", header, message);
     // va_end(args);
+
+    // Write line to log file
+    if (logger_fp == NULL) return;
+    header = logger_get_log_file_header(level);
+    fprintf(logger_fp, "%s %s", header, message);
+
     return;
 }
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -41,8 +68,6 @@ void logger_log(logger_level level, char* message) {
 
 
 // :::: LOG FILE HANDLE :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-static FILE* logger_fp = NULL;
-
 int logger_init(const char *file_path) {
     if (logger_fp == NULL)
         logger_fp = fopen(file_path, "w");

@@ -26,7 +26,14 @@ typedef enum {
  * 
  * @param level The logging level to get the header for
  */
-char* logger_get_colored_header(logger_level level);
+char* logger_get_stdout_header(logger_level level);
+
+/**
+ * @brief Get a header for the message written in the log file.
+ * 
+ * @param level The logging level to get the header for
+ */
+char* logger_get_log_file_header(logger_level level);
 
 /**
  * @brief Print a colored message to stdout and log file.

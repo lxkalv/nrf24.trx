@@ -10,6 +10,11 @@ int main() {
     else
         logger_log(LOGGER_INFO, "Logging to file\n");
 
+    logger_log(LOGGER_INFO,  "This is a test for an INFO logging message\n");
+    logger_log(LOGGER_WARN,  "This is a test for an WARN logging message\n");
+    logger_log(LOGGER_ERROR, "This is a test for an ERROR logging message\n");
+    logger_log(LOGGER_SUCC,  "This is a test for an SUCC logging message\n");
+
 
     logger_close();
     return 0;
