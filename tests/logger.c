@@ -5,10 +5,8 @@
 int main() {
     char* log_path = "logs/test.log";
 
-    if (logger_init(log_path) != 0)
-        logger_log(LOGGER_ERROR, "An error ocurred!");
-    else
-        logger_log(LOGGER_INFO, "Logging to file\n");
+    if (logger_init(log_path) == 0)
+        logger_log(LOGGER_INFO, "Logging to: %s\n", log_path);
 
     logger_log(LOGGER_INFO,  "This is a test for an INFO logging message\n");
     logger_log(LOGGER_WARN,  "This is a test for an WARN logging message\n");

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include "logger.h"
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -45,20 +46,23 @@ char* logger_get_log_file_header(logger_level level) {
         return "";
 }
 
-// void logger_log(logger_level level, char* message, const char* fmt, ...) {
-void logger_log(logger_level level, char* message) {
-    // va_list args;
-    // va_start(args, fmt);
-    char* header = logger_get_stdout_header(level);
-    // char buffer[128];
-    printf("%s %s", header, message);
-    // va_end(args);
+void logger_log(logger_level level, const char* message, ...) {
+    // Print header
+    fprintf(stdout, "%s ", logger_get_stdout_header(level));
+    
+    // Write to stdout
+    va_list args;
+    va_start(args, message);
+    vfprintf(stdout, message, args);
+    va_end(args);
 
     // Write line to log file
     if (logger_fp == NULL) return;
-    header = logger_get_log_file_header(level);
-    fprintf(logger_fp, "%s %s", header, message);
 
+    va_start(args, message);
+    fprintf(logger_fp, "%s ", logger_get_log_file_header(level));
+    vfprintf(logger_fp, message, args);
+    va_end(args);
     return;
 }
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -73,7 +77,7 @@ int logger_init(const char *file_path) {
         logger_fp = fopen(file_path, "w");
 
     if (logger_fp == NULL) {
-        fprintf(stderr, "Could not open log file %s: %s\n", file_path, strerror(errno));
+        logger_log(LOGGER_WARN, "Could not open log file %s: %s\n", file_path, strerror(errno));
         return 1;
     }
         

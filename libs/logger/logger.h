@@ -45,7 +45,7 @@ char* logger_get_log_file_header(logger_level level);
  * @param level The logging level to be used
  * @param message The string to be logged
  */
-void logger_log(logger_level level, char* message);
+void logger_log(logger_level level, const char* message, ...);
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
