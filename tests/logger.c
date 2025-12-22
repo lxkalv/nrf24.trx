@@ -3,7 +3,7 @@
 
 #include "logger/logger.h"
 
-int main() {
+int main(void) {
     char* log_path = "logs/test.log";
     if (logger_init(log_path) == 0)
         logger_log(LOGGER_INFO, "Logging to: %s\n", log_path);
