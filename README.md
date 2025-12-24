@@ -13,7 +13,9 @@ line, controlling the LEDs of the node and moving the neccessary files from and
 to a USB.
 
 ```
-asdasd
+┏━━━━━━━━━━━━━━━━━━━┓
+┃ APPLICATION LAYER ┃
+┗━━━━━━━━━━━━━━━━━━━┛
 ```
 
 ## P2P Architecture
