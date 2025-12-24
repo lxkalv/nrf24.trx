@@ -12,14 +12,14 @@
 
 // :::: DEFINITIONS :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 nrf24_config radio_config = {
-  .spi_speed              = 10000000,
-  .ce_pin                 = 22,
-  .channel                = 76,
-  .data_rate              = NRF24_DATA_RATE_1MBPS,
-  .pa_level               = NRF24_PA_LEVEL_MIN,
-  .crc_length             = NRF24_CRC_2_BYTES,
-  .retransmission_retries = 15,
-  .retransmission_delay   = 2,
+  .spi_speed   = 10000000,
+  .ce_pin      = 22,
+  .channel     = 76,
+  .data_rate   = NRF24_DATA_RATE_1MBPS,
+  .pa_level    = NRF24_PA_LEVEL_MIN,
+  .crc_length  = NRF24_CRC_2_BYTES,
+  .rtx_retries = 15,
+  .rtx_delay   = 2,
 };
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -67,7 +67,7 @@ const char* nrf24_get_crc_length(void) {
 }
 
 void nrf24_get_rtx_delay(char* buffer, int capacity) {
-    snprintf(buffer, capacity, "%d (%d us)", radio_config.retransmission_delay, 250 * (1 + radio_config.retransmission_delay));
+    snprintf(buffer, capacity, "%d (%d us)", radio_config.rtx_delay, 250 * (1 + radio_config.rtx_delay));
     return;
 }
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -76,6 +76,89 @@ void nrf24_get_rtx_delay(char* buffer, int capacity) {
 
 
 // :::: RADIO CONFIG ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+int nrf24_set_channel(int channel) {
+    if (channel < 0 || 125 < channel) {
+
+        return 1;
+    }
+
+    radio_config.channel = channel;
+    // TODO: change channel
+
+    return 0;
+}
+
+int nrf24_set_data_rate(nrf24_data_rate data_rate) {
+    switch(data_rate) {
+        case NRF24_DATA_RATE_250KBPS:
+        case NRF24_DATA_RATE_1MBPS:
+        case NRF24_DATA_RATE_2MBPS:
+            radio_config.data_rate = data_rate;
+
+            // TODO: change data rate
+
+            return 0;
+
+        case NRF24_DATA_RATE_UNSET:
+        default:
+            return 1;
+    }
+}
+
+int nrf24_set_pa_level(nrf24_pa_level pa_level) {
+    switch(pa_level) {
+        case NRF24_PA_LEVEL_MIN:
+        case NRF24_PA_LEVEL_LOW:
+        case NRF24_PA_LEVEL_HIGH:
+        case NRF24_PA_LEVEL_MAX:
+            radio_config.pa_level = pa_level;
+
+            // TODO: change pa level
+
+            return 0;
+
+        case NRF24_PA_LEVEL_UNSET:
+        default:
+            return 1;
+    }
+}
+
+int nrf24_set_crc_length(nrf24_crc_length crc_length) {
+    switch(crc_length) {
+        case NRF24_CRC_NONE:
+        case NRF24_CRC_1_BYTES:
+        case NRF24_CRC_2_BYTES:
+            radio_config.crc_length = crc_length;
+
+            // TODO: change crc length
+
+            return 0;
+
+        case NRF24_CRC_UNSET:
+        default:
+            return 1;
+    }
+    return 0;
+}
+
+int nrf24_set_rtx_retries(int rtx_retries) {
+    if (rtx_retries < 0 || 15 < rtx_retries) {
+        return 1;
+    }
+    radio_config.rtx_retries = rtx_retries;
+    // TODO: change rtx retries
+    return 0;
+}
+
+int nrf24_set_rtx_delay(int rtx_delay) {
+    if (rtx_delay < 0 || 15 < rtx_delay) {
+        return 1;
+    }
+    radio_config.rtx_delay = rtx_delay;
+    // TODO: change rtx delay
+    return 0;
+}
+
 void nrf24_print_user_radio_config(void) {
     char spi_speed[128], channel[128], rtx_delay[128];
     nrf24_get_spi_speed(spi_speed, sizeof(spi_speed));
@@ -103,7 +186,7 @@ void nrf24_print_user_radio_config(void) {
         "DATA RATE",   nrf24_get_data_rate(),
         "PA LEVEL",    nrf24_get_pa_level(),
         "CRC LENGTH",  nrf24_get_crc_length(),
-        "RTX RETRIES", radio_config.retransmission_retries,
+        "RTX RETRIES", radio_config.rtx_retries,
         "RTX DELAY",   rtx_delay
     );
     return;
