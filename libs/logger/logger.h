@@ -2,18 +2,17 @@
 #define   LOGGER_H
 
 // :::: DEFINITIONS :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#define LOGGER_RED    "\x1b[31m"
-#define LOGGER_GREEN  "\x1b[32m"
-#define LOGGER_YELLOW "\x1b[33m"
-#define LOGGER_BLUE   "\x1b[34m"
-#define LOGGER_RESET   "\x1b[0m"
 
+/**
+ * @brief Enum representing the log level of the message.
+ */
 typedef enum {
     LOGGER_INFO = 0,
     LOGGER_WARN,
     LOGGER_ERROR,
     LOGGER_SUCC,
 } logger_level;
+
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
@@ -21,44 +20,21 @@ typedef enum {
 
 
 // :::: UTILS :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 /**
- * @brief Fill the provided buffer with a timestamp.
+ * @brief Add a timestamp to the provided file path.
  *
- * The format NEEDS to follow the following order:
- * - YEAR
- * - MONTH
- * - DAY
- * - HOUR
- * - MINUTE
- * - SECOND
- *
- * Example format: YYYY-MM-DD_HH:MM:SS -> %04d-%02d-%02d_%02d:%02d:%02d
- *
- * @param buffer The buffer that will be filled up with the timestamp.
- * @param capacity The size of the buffer.
- * @param fmt The string format to follow.
+ * @param file_path The file_path to add the timestamp to.
  */
-int logger_generate_timestamp(char* buffer, int capacity, const char* fmt);
+int logger_add_timestamp_to_filepath(char* file_path, int capacity);
+
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
 
 
 
-// :::: COLORING ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-/**
- * @brief Print a colored header based on the log level.
- *
- * @param level The logging level to print the header for
- */
-void logger_print_stdout_header(logger_level level);
-
-/**
- * @brief Print a timestamped header for the message written in the log file.
- *
- * @param level The logging level to print the header for
- */
-void logger_print_log_file_header(logger_level level);
+// :::: LOGGING :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 /**
  * @brief Print a colored message to stdout and log file.
@@ -71,6 +47,7 @@ void logger_print_log_file_header(logger_level level);
  * @param message The string to be logged
  */
 void logger_log(logger_level level, const char* message, ...);
+
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
@@ -78,6 +55,7 @@ void logger_log(logger_level level, const char* message, ...);
 
 
 // :::: LOG FILE HANDLE :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
 /**
  * @brief Initialize the logger.
  *
@@ -96,12 +74,6 @@ int logger_init(const char* file_path);
  */
 void logger_close(void);
 
-/**
- * @brief Add a timestamp to the provided file path.
- *
- * @param file_path The file_path to add the timestamp to.
- */
-int logger_add_timestamp_to_filepath(char* file_path, int capacity);
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 #endif // LOGGER_H

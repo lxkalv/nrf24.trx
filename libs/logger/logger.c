@@ -13,35 +13,31 @@
 
 
 // :::: DEFINITIONS :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-static FILE* logger_fp = NULL;
+#define LOGGER_RED    "\x1b[31m" /** Initializes RED color.    */
+#define LOGGER_GREEN  "\x1b[32m" /** Initializes GREEN color.  */
+#define LOGGER_YELLOW "\x1b[33m" /** Initializes YELLOW color. */
+#define LOGGER_BLUE   "\x1b[34m" /** Initializes BLUE color.   */
+#define LOGGER_RESET   "\x1b[0m" /** Restores normal color.    */
+
+/**
+ * @brief Global pointer to the log file.
+ */
+static FILE* log_file_ptr = NULL;
+
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
 
 
 
-// :::: UTILS :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-int logger_generate_timestamp(char* buffer, int capacity, const char* fmt) {
-    time_t now   = time(NULL);
-    struct tm* t = localtime(&now);
+// :::: HELPERS :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    int needed = strlen(fmt);
-    if (needed > capacity) {
-        fprintf(stderr, "Capacity of %d is insufficient, needed: %d\n", capacity, needed);
-        return 1;
-    }
-
-    snprintf(buffer, capacity, fmt, t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
-    return 0;
-}
-// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
-
-
-
-
-// :::: COLORING ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-void logger_print_stdout_header(logger_level level) {
+/**
+ * @brief Print a colored header based on the log level.
+ *
+ * @param level The logging level to print the header for
+ */
+static void print_stdout_header(logger_level level) {
     // Print logging level
     if (level == LOGGER_INFO)
         printf(LOGGER_BLUE"[INFO]:"LOGGER_RESET" ");
@@ -55,11 +51,16 @@ void logger_print_stdout_header(logger_level level) {
     return;
 }
 
-void logger_print_log_file_header(logger_level level) {
-    if (logger_fp == NULL)
+/**
+ * @brief Print a timestamped header for the message written in the log file.
+ *
+ * @param level The logging level to print the header for
+ */
+static void print_log_file_header(logger_level level) {
+    if (log_file_ptr == NULL)
         return;
 
-    // Print timestamp
+    // Generate timestamp
     time_t now   = time(NULL);
     struct tm* t = localtime(&now);
 
@@ -67,43 +68,28 @@ void logger_print_log_file_header(logger_level level) {
     clock_gettime(CLOCK_REALTIME, &ts);
     long milis = ts.tv_nsec / 1000000;
 
-    fprintf(logger_fp, "[%04d-%02d-%02d %02d:%02d:%02d.%03ld] ", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, milis);
+    fprintf(log_file_ptr, "[%04d-%02d-%02d %02d:%02d:%02d.%03ld] ", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec, milis);
 
     // Print logging level
     if (level == LOGGER_INFO)
-        fprintf(logger_fp, "INFO: ");
+        fprintf(log_file_ptr, "INFO: ");
     else if (level == LOGGER_WARN)
-        fprintf(logger_fp, "WARN: ");
+        fprintf(log_file_ptr, "WARN: ");
     else if (level == LOGGER_ERROR)
-        fprintf(logger_fp, "ERROR: ");
+        fprintf(log_file_ptr, "ERROR: ");
     else if (level == LOGGER_SUCC)
-        fprintf(logger_fp, "SUCC: ");
+        fprintf(log_file_ptr, "SUCC: ");
 
     return;
 }
 
-void logger_log(logger_level level, const char* message, ...) {
-    va_list args;
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-    // Print header
-    logger_print_stdout_header(level);
 
-    // Write to stdout
-    va_start(args, message);
-    vfprintf(stdout, message, args);
-    va_end(args);
 
-    if (logger_fp == NULL) return;
 
-    // Print timestamped header
-    logger_print_log_file_header(level);
 
-    // Write to log file
-    va_start(args, message);
-    vfprintf(logger_fp, message, args);
-    va_end(args);
-    return;
-}
+// :::: UTILS :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 int logger_add_timestamp_to_filepath(char* file_path, int capacity) {
     // Find dot indicating the extension
@@ -114,16 +100,20 @@ int logger_add_timestamp_to_filepath(char* file_path, int capacity) {
     char left_part[capacity], right_part[capacity];
     strncpy(left_part, file_path, dot_idx);
     left_part[dot_idx] = '\0';
-    strncpy(right_part, file_path + dot_idx + 1, strlen(file_path) - dot_idx);
+    strncpy(right_part, file_path + dot_idx + 1, capacity - dot_idx);
     right_part[dot_idx] = '\0';
 
     // Generate timestamp
-    char timestamp[35];
-    logger_generate_timestamp(timestamp, sizeof(timestamp), "%04d-%02d-%02d_____%02d:%02d:%02d");
+    char timestamp[128];
+
+    time_t now   = time(NULL);
+    struct tm* t = localtime(&now);
+
+    snprintf(timestamp, sizeof(timestamp), "%04d-%02d-%02d_%02d:%02d:%02d", t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
 
     int needed = strlen(left_part) + strlen(timestamp) + strlen(right_part);
     if (needed > capacity) {
-        fprintf(stderr, "Capacity of %d is insuficient: needed %d\n", capacity, needed);
+        logger_log(LOGGER_ERROR, "Capacity of %d is insuficient: needed %d\n", capacity, needed);
         return 1;
     }
 
@@ -131,6 +121,38 @@ int logger_add_timestamp_to_filepath(char* file_path, int capacity) {
     sprintf(file_path, "%s_%s.%s", left_part, timestamp, right_part);
     return 0;
 }
+
+// ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+
+
+// :::: LOGGING :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+void logger_log(logger_level level, const char* message, ...) {
+    va_list args;
+
+    // Print header
+    print_stdout_header(level);
+
+    // Write to stdout
+    va_start(args, message);
+    vfprintf(stdout, message, args);
+    va_end(args);
+
+    if (log_file_ptr == NULL) return;
+
+    // Print timestamped header
+    print_log_file_header(level);
+
+    // Write to log file
+    va_start(args, message);
+    vfprintf(log_file_ptr, message, args);
+    va_end(args);
+    return;
+}
+
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
@@ -138,11 +160,12 @@ int logger_add_timestamp_to_filepath(char* file_path, int capacity) {
 
 
 // :::: LOG FILE HANDLE :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-int logger_init(const char *file_path) {
-    if (logger_fp == NULL)
-        logger_fp = fopen(file_path, "w");
 
-    if (logger_fp == NULL) {
+int logger_init(const char *file_path) {
+    if (log_file_ptr == NULL)
+        log_file_ptr = fopen(file_path, "w");
+
+    if (log_file_ptr == NULL) {
         fprintf(stderr, "Could not open log file %s: %s\n", file_path, strerror(errno));
         return 1;
     }
@@ -151,11 +174,12 @@ int logger_init(const char *file_path) {
 }
 
 void logger_close(void) {
-    if (logger_fp != NULL) {
-        fflush(logger_fp);
-        fclose(logger_fp);
-        logger_fp = NULL;
+    if (log_file_ptr != NULL) {
+        fflush(log_file_ptr);
+        fclose(log_file_ptr);
+        log_file_ptr = NULL;
     }
     return;
 }
+
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
