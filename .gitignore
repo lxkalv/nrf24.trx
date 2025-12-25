@@ -1,2 +1,4 @@
 *.log
 bin/tests/*
+compile_commands.json
+.cache
