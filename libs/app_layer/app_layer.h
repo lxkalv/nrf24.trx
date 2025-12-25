@@ -35,6 +35,7 @@ typedef struct {
 } app_config_t;
 
 extern app_config_t app_config;
+
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
@@ -62,6 +63,7 @@ int app_parse_user_config(int argc, char** argv);
  * @brief Print the current app configuration.
  */
 void app_print_app_config(void);
+
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
 
