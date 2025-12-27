@@ -19,7 +19,7 @@ int main(void) {
 
 
 
-    logger_add_timestamp_to_filepath(log_path, sizeof(log_path));
+    if (logger_add_timestamp_to_filepath(log_path, sizeof(log_path)) != 0) return 1;
     logger_log(LOGGER_INFO, "Adding timestamp to file name, now %s\n", log_path);
 
     if (logger_init(log_path) != 0) return 1;
