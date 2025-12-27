@@ -6,7 +6,10 @@ LIB_FILES = libs/logger/logger.c         \
 
 all: tests
 
-tests: tests_logger tests_nrf24 tests_app_layer tests_pres_layer
+tests: tests_logger     \
+	   tests_nrf24      \
+	   tests_app_layer  \
+	   tests_pres_layer
 
 tests_logger:
 	mkdir -p bin/tests/logger
@@ -14,8 +17,8 @@ tests_logger:
 	gcc -o bin/tests/logger/logger_init $(CFLAGS) $(LIB_FILES) tests/logger/logger_init.c
 
 tests_nrf24:
-	mkdir -p bin/tests
-	gcc -o bin/tests/nrf24 $(CFLAGS) $(LIB_FILES) tests/nrf24.c
+	mkdir -p bin/tests/nrf24
+	gcc -o bin/tests/nrf24/configs $(CFLAGS) $(LIB_FILES) tests/nrf24/configs.c
 
 tests_app_layer:
 	mkdir -p bin/tests/app_layer
