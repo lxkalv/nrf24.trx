@@ -11,7 +11,7 @@ typedef enum {
     LOGGER_WARN,
     LOGGER_ERROR,
     LOGGER_SUCC,
-} logger_level;
+} logger_level_t;
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
@@ -46,7 +46,7 @@ int logger_add_timestamp_to_filepath(char* file_path, int capacity);
  * @param level The logging level to be used
  * @param message The string to be logged
  */
-void logger_log(logger_level level, const char* message, ...);
+void logger_log(logger_level_t level, const char* message, ...);
 
 // ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
